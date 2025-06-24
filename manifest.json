@@ -1,0 +1,15 @@
+{
+  "name": "K-Novel Translator",
+  "description": "Translates Korean text (including text in images) on the current page",
+  "version": "1.0",
+  "manifest_version": 3,
+  "permissions": [
+    "activeTab",
+    "scripting"
+  ],
+  "action": {
+    "default_popup": "popup.html",
+    "default_icon": "translate.png",
+    "default_title": "Translate this page"
+  }
+}
