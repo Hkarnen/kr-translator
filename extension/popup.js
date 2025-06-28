@@ -1,13 +1,36 @@
-document.getElementById("run").addEventListener("click", async () => {
-  // find the active tab
-  const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+document.addEventListener("DOMContentLoaded", function() {
+	const toggleButton = document.getElementById("toggleSelection");
+	const clearButton = document.getElementById("clearSelection");
+	const selectedCount = document.getElementById("selectedCount");
 
-  // inject an inline function that just logs to the page console
-  await chrome.scripting.executeScript({
-    target: { tabId: tab.id },
-    func: () => console.log("[K-Novel] Hello from injected script!")
-  });
+	// Update selected count on popup open
+	updateSelectedCount();
 
-  // close the popup so it doesn’t linger
-  window.close();
+	toggleButton.addEventListener("click", async () => {
+		const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+		chrome.tabs.sendMessage(tab.id, { action: "toggleSelection" });
+		window.close();
+	});
+	
+	clearButton.addEventListener("click", async () => {
+		const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+		chrome.tabs.sendMessage(tab.id, { action: "clearSelection" });
+		//Update count after clearing
+		setTimeout(updateSelectedCount, 100);
+	});
+
+	async function updateSelectedCount() {
+		try{
+			const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+			chrome.tabs.sendMessage(tab.id, { action: "getSelectedImages" }, (response) => {
+				if (response && response.images !== undefined) {
+					selectedCount.textContent = `Selected: ${response.images}`;
+				}
+			});
+		}
+		catch (error) {
+			console.log("[K-Novel] Could not get selected count");
+		}
+	}
+
 });
