@@ -26,7 +26,7 @@ function toggleSelectionMode() {
 
 function startSelectionMode() {
     // Add visual indicator
-    document.body.style.cursos = "croshair";
+    document.body.style.cursor = "croshair";
     // Add click listeners to all images
     const images = document.querySelectorAll("img");
     images.forEach(img => {
