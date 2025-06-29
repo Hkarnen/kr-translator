@@ -20,26 +20,26 @@ Many Korean novel websites display their text content as images rather than sele
 
 ## File Structure
 ```
-📦extension
- ┣ 📂icons
- ┃ ┣ 📜128.png
- ┃ ┣ 📜16.png
- ┃ ┣ 📜32.png
- ┃ ┣ 📜48.png
- ┃ ┗ 📜icon512.png
- ┣ 📂tesseract
- ┃ ┣ 📂lang
- ┃ ┃ ┗ 📜kor.traineddata
- ┃ ┣ 📜tesseract-core-lstm.js
- ┃ ┣ 📜tesseract-core-simd-lstm.wasm.js
- ┃ ┣ 📜tesseract-core-simd.wasm.js
- ┃ ┣ 📜tesseract-core.wasm.js
- ┃ ┣ 📜tesseract.min.js
- ┃ ┗ 📜worker.min.js
- ┣ 📜content.js
- ┣ 📜manifest.json
- ┣ 📜popup.html
- ┗ 📜popup.js
+extension/
+├── icons/
+│   ├── 16.png
+│   ├── 32.png
+│   ├── 48.png
+│   ├── 128.png
+│   └── icon512.png
+├── tesseract/
+│   ├── lang/
+│   │   └── kor.traineddata
+│   ├── tesseract-core-lstm.js
+│   ├── tesseract-core-simd-lstm.wasm.js
+│   ├── tesseract-core-simd.wasm.js
+│   ├── tesseract-core.wasm.js
+│   ├── tesseract.min.js
+│   └── worker.min.js
+├── content.js
+├── manifest.json
+├── popup.html
+└── popup.js
  ```
 
 ## How to Use
