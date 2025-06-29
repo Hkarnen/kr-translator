@@ -11,8 +11,14 @@
   "content_scripts": [
     {
       "matches": ["<all_urls>"],
-      "js": ["content.js"],
+      "js": ["content.js", "/tesseract/tesseract.min.js"],
       "run_at": "document_idle"
+    }
+  ],
+  "web_accessible_resources": [
+    {
+      "resources": ["tesseract/*"],
+      "matches": ["<all_urls>"]
     }
   ],
   "action": {
