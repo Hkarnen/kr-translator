@@ -1,5 +1,6 @@
 let selectedImages = [];
 let selectionMode = false;
+let tesseractWorker = null;
 
 // Listen for popup
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
@@ -12,7 +13,52 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     else if (message.action === "clearSelection") {
         clearSelection();
     }
+    else if (message.action === "translateSelected") {
+        translateSelectedImages();
+    }
 });
+
+async function initTesseractWorker() {
+    // Create a worker if not already created
+    if (!tesseractWorker) {
+        tesseractWorker = await Tesseract.createWorker('kor', {
+            workerBlobURL: false,
+            corePath: chrome.runtime.getUrl("tesseract"),
+            workerPath: chrome.runtime.getUrl("tesseract/worker.min.js"),
+            langPath: chrome.runtime.getUrl("tesseract/lang"),
+            logger: m => console.log(`[OCR] ${m.status} ${(m.progress*100)|0}%`)
+        })
+    }
+
+    return tesseractWorker;
+}
+
+async function translateSelectedImages() {
+    if (selectedImages.length === 0) {
+        console.log("[K-Novel] No images selected");
+        return;
+    }
+
+    console.log(`[K-Novel Starting OCR for ${selectedImages.length} images`);
+
+    try {
+        const worker = await initTesseractWorker();
+
+        for (let i = 0; i < selectedImages.length; i++) {
+            // Process image
+            console.log(`Processing image ${i+1} of ${selectedImages.length}`);
+            const { data: { text } } = await worker.recognize(selectedImages[i]);
+            console.log("Extracted text:", text);
+
+            // OPENAI translation
+        }
+    }
+
+    catch (error) {
+        console.error("[K-Novel] OCR error:", error);
+    }
+    
+}
 
 function toggleSelectionMode() {
     selectionMode = !selectionMode;

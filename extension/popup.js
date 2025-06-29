@@ -1,5 +1,6 @@
 document.addEventListener("DOMContentLoaded", function() {
 	const toggleButton = document.getElementById("toggleSelection");
+	const translateButton = document.getElementById("translateSelected")
 	const clearButton = document.getElementById("clearSelection");
 	const selectedCount = document.getElementById("selectedCount");
 
@@ -9,7 +10,11 @@ document.addEventListener("DOMContentLoaded", function() {
 	toggleButton.addEventListener("click", async () => {
 		const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
 		chrome.tabs.sendMessage(tab.id, { action: "toggleSelection" });
-		window.close();
+	});
+
+	translateButton.addEventListener("click", async () => {
+		const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+		chrome.tabs.sendMessage(tab.id, { action: "translateSelected" });
 	});
 	
 	clearButton.addEventListener("click", async () => {
