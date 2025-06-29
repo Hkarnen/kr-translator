@@ -11,7 +11,7 @@
   "content_scripts": [
     {
       "matches": ["<all_urls>"],
-      "js": ["content.js", "/tesseract/tesseract.min.js"],
+      "js": ["/tesseract/tesseract.min.js", "content.js"],
       "run_at": "document_idle"
     }
   ],
