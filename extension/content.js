@@ -23,10 +23,9 @@ async function initTesseractWorker() {
     if (!tesseractWorker) {
         tesseractWorker = await Tesseract.createWorker('kor', {
             workerBlobURL: false,
-            corePath: chrome.runtime.getUrl("tesseract"),
-            workerPath: chrome.runtime.getUrl("tesseract/worker.min.js"),
-            langPath: chrome.runtime.getUrl("tesseract/lang"),
-            logger: m => console.log(`[OCR] ${m.status} ${(m.progress*100)|0}%`)
+            corePath: chrome.runtime.getURL("tesseract"),
+            workerPath: chrome.runtime.getURL("tesseract/worker.min.js"),
+            langPath: chrome.runtime.getURL("tesseract/lang"),
         })
     }
 
@@ -47,10 +46,16 @@ async function translateSelectedImages() {
         for (let i = 0; i < selectedImages.length; i++) {
             // Process image
             console.log(`Processing image ${i+1} of ${selectedImages.length}`);
-            const { data: { text } } = await worker.recognize(selectedImages[i]);
-            console.log("Extracted text:", text);
+            const { data: { text } } = await worker.recognize(selectedImages[i], {
+                logger: m => console.log(`[OCR] Image ${i+1}: ${m.status} ${(m.progress*100|0)%}`)
+            });
+            console.log(`Extracted text from image ${i+1}:`, text);
 
             // OPENAI translation
+
+            // Terminate worker when done
+            await worker.terminate();
+            tesseractWorker = null;
         }
     }
 
