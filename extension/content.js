@@ -47,7 +47,7 @@ async function translateSelectedImages() {
             // Process image
             console.log(`Processing image ${i+1} of ${selectedImages.length}`);
             const { data: { text } } = await worker.recognize(selectedImages[i], {
-                logger: m => console.log(`[OCR] Image ${i+1}: ${m.status} ${(m.progress*100|0)%}`)
+                logger: m => console.log(`[OCR] Image ${i+1}: ${m.status} ${Math.floor(m.progress*100)}%`)
             });
             console.log(`Extracted text from image ${i+1}:`, text);
 
