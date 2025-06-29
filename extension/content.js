@@ -2,6 +2,8 @@ let selectedImages = [];
 let selectionMode = false;
 let tesseractWorker = null;
 
+Tesseract.setLogging(true);
+
 // Listen for popup
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     if (message.action === "toggleSelection") {
@@ -27,6 +29,7 @@ async function initTesseractWorker() {
             workerPath: chrome.runtime.getURL("tesseract/worker.min.js"),
             langPath: chrome.runtime.getURL("tesseract/lang"),
         })
+
     }
 
     return tesseractWorker;
@@ -46,9 +49,7 @@ async function translateSelectedImages() {
         for (let i = 0; i < selectedImages.length; i++) {
             // Process image
             console.log(`Processing image ${i+1} of ${selectedImages.length}`);
-            const { data: { text } } = await worker.recognize(selectedImages[i], {
-                logger: m => console.log(`[OCR] Image ${i+1}: ${m.status} ${Math.floor(m.progress*100)}%`)
-            });
+            const { data: { text } } = await worker.recognize(selectedImages[i]);
             console.log(`Extracted text from image ${i+1}:`, text);
 
             // OPENAI translation
