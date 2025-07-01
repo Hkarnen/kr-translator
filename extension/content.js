@@ -57,7 +57,7 @@ async function translateText(text) {
                 model: "gpt-4o-mini",
                 messages: [
                     { 
-                        role: "system", 
+                        role: "developer", 
                         content: "You are a helpful assistant that translates Korean text to English. Provide only the translation without any explanatory text." 
                     },
                     { 
