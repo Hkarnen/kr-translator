@@ -53,11 +53,11 @@ async function translateSelectedImages() {
             console.log(`Extracted text from image ${i+1}:`, text);
 
             // OPENAI translation
-
-            // Terminate worker when done
-            await worker.terminate();
-            tesseractWorker = null;
+            
         }
+        // Terminate worker when done
+        await worker.terminate();
+        tesseractWorker = null;
     }
 
     catch (error) {
