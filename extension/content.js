@@ -35,6 +35,59 @@ async function initTesseractWorker() {
     return tesseractWorker;
 }
 
+async function translateText(text) {
+    try {
+        console.log("Translating text:", text);
+        
+        // Get API key from storage
+        const result = await chrome.storage.local.get(['openai_api_key']);
+        const apiKey = result.openai_api_key;
+        
+        if (!apiKey) {
+            throw new Error("No OpenAI API key found. Please set your API key in the extension popup.");
+        }
+        
+        const response = await fetch('https://api.openai.com/v1/chat/completions', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${apiKey}`
+            },
+            body: JSON.stringify({
+                model: "gpt-4o-mini",
+                messages: [
+                    { 
+                        role: "system", 
+                        content: "You are a helpful assistant that translates Korean text to English. Provide only the translation without any explanatory text." 
+                    },
+                    { 
+                        role: "user", 
+                        content: `Translate the following Korean text to English:\n\n${text}` 
+                    }
+                ],
+                temperature: 0.3 
+            })
+        });
+
+        // Check if response is ok
+        if (!response.ok) {
+            const errorText = await response.text();
+            throw new Error(`Translation API error: ${response.status} ${response.statusText} - ${errorText}`);
+        }
+
+        const data = await response.json();
+           
+        const translatedText = data.choices[0].message.content.trim();
+        console.log("Translation result:", translatedText);
+        
+        return translatedText;
+    } 
+    catch (error) {
+        console.error("[K-Novel] Translation error:", error);
+        throw error;
+    }
+}
+
 async function translateSelectedImages() {
     if (selectedImages.length === 0) {
         console.log("[K-Novel] No images selected");
@@ -50,10 +103,29 @@ async function translateSelectedImages() {
             // Process image
             console.log(`Processing image ${i+1} of ${selectedImages.length}`);
             const { data: { text } } = await worker.recognize(selectedImages[i]);
+
+            // Log the extracted text - KOREAN
             console.log(`Extracted text from image ${i+1}:`, text);
 
-            // OPENAI translation
-            
+            // Skip translation if no text was extracted
+            if (!text || text.trim() === '') {
+                console.log(`No text found in image ${i+1}, skipping translation`);
+                continue;
+            }
+
+            // Translate the extracted text
+            console.log(`Translating text from image ${i+1}...`);
+            try {
+                const translatedText = await translateText(text);
+                // Log the translated text - ENGLISH
+                console.log(`Translation for image ${i+1}:`, translatedText);
+                
+                // TODO: Display or store the translated text as needed
+                
+            } 
+            catch (translationError) {
+                console.error(`Failed to translate text from image ${i+1}:`, translationError);
+            }
         }
         // Terminate worker when done
         await worker.terminate();
