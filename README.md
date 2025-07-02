@@ -56,10 +56,11 @@ extension/
 
 ## Future Plans
 ### Translation
-- [ ] OpenAI GPT-4 mini integration for translation
-- [ ] Display translation results
+- [X] OpenAI GPT-4 mini integration for translation
+- [X] Display translation results
 ### UX
 - [ ] Translation results displayed in new overlay / tab
+- [ ] Font & font-size support
 
 ### Other Features
 - [ ] Multiple language support
