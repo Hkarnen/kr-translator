@@ -12,6 +12,10 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     else if (message.action === "getSelectedImages") {
         sendResponse({ images: selectedImages.length });
     }
+    else if (message.action === "getSelectionModeState") {
+        console.log("[K-Novel] Selection mode state requested:", selectionMode);
+        sendResponse({ isActive: selectionMode });
+    }
     else if (message.action === "clearSelection") {
         clearSelection();
     }
