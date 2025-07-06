@@ -19,8 +19,8 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     else if (message.action === "clearSelection") {
         clearSelection();
     }
-    else if (message.action === "translateSelected") {
-        translateSelectedImages();
+    else if (message.action === "extractText") {
+        extractTextFromSelectedImages();
     }
 });
 
@@ -39,107 +39,145 @@ async function initTesseractWorker() {
     return tesseractWorker;
 }
 
-async function translateText(text) {
-    try {
-        console.log("Translating text:", text);
-        
-        // Get API key from storage
-        const result = await chrome.storage.local.get(['openai_api_key']);
-        const apiKey = result.openai_api_key;
-        
-        if (!apiKey) {
-            throw new Error("No OpenAI API key found. Please set your API key in the extension popup.");
-        }
-        
-        const response = await fetch('https://api.openai.com/v1/chat/completions', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${apiKey}`
-            },
-            body: JSON.stringify({
-                model: "gpt-4o-mini",
-                messages: [
-                    { 
-                        role: "developer", 
-                        content: "You are a helpful assistant that translates Korean text to English. Provide only the translation without any explanatory text." 
-                    },
-                    { 
-                        role: "user", 
-                        content: `Translate the following Korean text to English:\n\n${text}` 
-                    }
-                ],
-                temperature: 0.3 
-            })
-        });
-
-        // Check if response is ok
-        if (!response.ok) {
-            const errorText = await response.text();
-            throw new Error(`Translation API error: ${response.status} ${response.statusText} - ${errorText}`);
-        }
-
-        const data = await response.json();
-           
-        const translatedText = data.choices[0].message.content.trim();
-        console.log("Translation result:", translatedText);
-        
-        return translatedText;
-    } 
-    catch (error) {
-        console.error("[K-Novel] Translation error:", error);
-        throw error;
-    }
-}
-
-async function translateSelectedImages() {
+async function extractTextFromSelectedImages() {
     if (selectedImages.length === 0) {
         console.log("[K-Novel] No images selected");
+        alert("No images selected for text extraction.");
         return;
     }
 
-    console.log(`[K-Novel Starting OCR for ${selectedImages.length} images`);
+    console.log(`[K-Novel] Starting OCR for ${selectedImages.length} images`);
 
     try {
         const worker = await initTesseractWorker();
+        const allKoreanTexts = [];
 
         for (let i = 0; i < selectedImages.length; i++) {
-            // Process image
             console.log(`Processing image ${i+1} of ${selectedImages.length}`);
             const { data: { text } } = await worker.recognize(selectedImages[i]);
 
-            // Log the extracted text - KOREAN
             console.log(`Extracted text from image ${i+1}:`, text);
 
-            // Skip translation if no text was extracted
-            if (!text || text.trim() === '') {
-                console.log(`No text found in image ${i+1}, skipping translation`);
-                continue;
-            }
-
-            // Translate the extracted text
-            console.log(`Translating text from image ${i+1}...`);
-            try {
-                const translatedText = await translateText(text);
-                // Log the translated text - ENGLISH
-                console.log(`Translation for image ${i+1}:`, translatedText);
-                
-                // TODO: Display or store the translated text as needed
-                
-            } 
-            catch (translationError) {
-                console.error(`Failed to translate text from image ${i+1}:`, translationError);
+            if (text && text.trim() !== '') {
+                allKoreanTexts.push(`=== Image ${i+1} ===\n${text.trim()}`);
+            } else {
+                console.log(`No text found in image ${i+1}`);
+                allKoreanTexts.push(`=== Image ${i+1} ===\n[No text detected]`);
             }
         }
+
         // Terminate worker when done
         await worker.terminate();
         tesseractWorker = null;
-    }
 
-    catch (error) {
+        // Combine all extracted text
+        const combinedText = allKoreanTexts.join('\n\n');
+        
+        // Display the extracted text in a new window or copy to clipboard
+        displayExtractedText(combinedText);
+
+    } catch (error) {
         console.error("[K-Novel] OCR error:", error);
+        alert(`OCR extraction failed: ${error.message}`);
     }
+}
+
+function displayExtractedText(text) {
+    // Create a new window to display the extracted Korean text
+    const newWindow = window.open('', '_blank', 'width=800,height=600,scrollbars=yes,resizable=yes');
     
+    if (newWindow) {
+        newWindow.document.write(`
+            <!DOCTYPE html>
+            <html>
+            <head>
+                <title>Extracted Korean Text</title>
+                <style>
+                    body {
+                        font-family: 'Segoe UI', Arial, sans-serif;
+                        line-height: 1.6;
+                        max-width: 800px;
+                        margin: 0 auto;
+                        padding: 20px;
+                        background: #f5f5f5;
+                    }
+                    .container {
+                        background: white;
+                        padding: 30px;
+                        border-radius: 10px;
+                        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+                    }
+                    h1 {
+                        color: #333;
+                        text-align: center;
+                        border-bottom: 2px solid #007bff;
+                        padding-bottom: 10px;
+                    }
+                    .text-content {
+                        background: #f8f9fa;
+                        padding: 20px;
+                        border-radius: 5px;
+                        border-left: 4px solid #007bff;
+                        white-space: pre-wrap;
+                        font-size: 16px;
+                        line-height: 1.8;
+                    }
+                    .copy-button {
+                        background: #28a745;
+                        color: white;
+                        border: none;
+                        padding: 10px 20px;
+                        border-radius: 5px;
+                        cursor: pointer;
+                        font-size: 16px;
+                        margin-top: 20px;
+                        display: block;
+                        margin-left: auto;
+                        margin-right: auto;
+                    }
+                    .copy-button:hover {
+                        background: #218838;
+                    }
+                </style>
+            </head>
+            <body>
+                <div class="container">
+                    <h1>🔍 Extracted Korean Text</h1>
+                    <div class="text-content" id="extractedText">${text.replace(/\n/g, '<br>')}</div>
+                    <button class="copy-button" onclick="copyToClipboard()">📋 Copy All Text</button>
+                </div>
+                
+                <script>
+                    function copyToClipboard() {
+                        const text = \`${text}\`;
+                        navigator.clipboard.writeText(text).then(() => {
+                            alert('Text copied to clipboard!');
+                        }).catch(err => {
+                            console.error('Failed to copy text: ', err);
+                            // Fallback for older browsers
+                            const textArea = document.createElement('textarea');
+                            textArea.value = text;
+                            document.body.appendChild(textArea);
+                            textArea.select();
+                            document.execCommand('copy');
+                            document.body.removeChild(textArea);
+                            alert('Text copied to clipboard!');
+                        });
+                    }
+                </script>
+            </body>
+            </html>
+        `);
+        newWindow.document.close();
+    } else {
+        // Fallback: copy to clipboard and show alert
+        navigator.clipboard.writeText(text).then(() => {
+            alert('Extracted text copied to clipboard!\\n\\nWindow popup was blocked, but text is in your clipboard.');
+        }).catch(err => {
+            console.error('Failed to copy text: ', err);
+            alert('Extracted text:\\n\\n' + text);
+        });
+    }
 }
 
 function toggleSelectionMode() {
