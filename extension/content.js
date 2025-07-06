@@ -58,15 +58,15 @@ async function translateText(text) {
                 'Authorization': `Bearer ${apiKey}`
             },
             body: JSON.stringify({
-                model: "gpt-4o-mini",
+                model: "gpt-4.1",
                 messages: [
                     { 
-                        role: "developer", 
-                        content: "You are a helpful assistant that translates Korean text to English. Provide only the translation without any explanatory text." 
+                        role: "system", 
+                        content: "You are a helpful assistant that translates Korean text to English. When translating multiple text segments, provide a single flowing English translation that reads naturally with proper paragraph breaks. Use double line breaks (\\n\\n) between paragraphs for better readability. Do not include any Korean text in your response, only provide the well-formatted English translation." 
                     },
                     { 
                         role: "user", 
-                        content: `Translate the following Korean text to English:\n\n${text}` 
+                        content: `Translate the following Korean text to English as a single flowing passage with proper paragraph formatting:\n\n${text}` 
                     }
                 ],
                 temperature: 0.3 
@@ -98,53 +98,61 @@ async function translateSelectedImages() {
         return;
     }
 
-    console.log(`[K-Novel Starting OCR for ${selectedImages.length} images`);
+    console.log(`[K-Novel] Starting OCR for ${selectedImages.length} images`);
 
     try {
         const worker = await initTesseractWorker();
+        const koreanTexts = [];
 
+        // Extract Korean text from all images
         for (let i = 0; i < selectedImages.length; i++) {
-            // Process image
             console.log(`Processing image ${i+1} of ${selectedImages.length}`);
             const { data: { text } } = await worker.recognize(selectedImages[i]);
 
-            // Log the extracted text - KOREAN
             console.log(`Extracted text from image ${i+1}:`, text);
 
-            // Skip translation if no text was extracted
-            if (!text || text.trim() === '') {
-                console.log(`No text found in image ${i+1}, skipping translation`);
-                continue;
-            }
-
-            // Translate the extracted text
-            console.log(`Translating text from image ${i+1}...`);
-            try {
-                const translatedText = await translateText(text);
-                // Log the translated text - ENGLISH
-                console.log(`Translation for image ${i+1}:`, translatedText);
-                
-                // Send translation to results window
-                chrome.runtime.sendMessage({
-                    action: "displayTranslation",
-                    originalText: text,
-                    translatedText: translatedText
-                });
-                
-            } 
-            catch (translationError) {
-                console.error(`Failed to translate text from image ${i+1}:`, translationError);
+            // Collect all text
+            if (text && text.trim() !== '') {
+                koreanTexts.push(text.trim());
             }
         }
-        // Terminate worker when done
+
+        // Terminate worker after OCR
         await worker.terminate();
         tesseractWorker = null;
-    }
 
-    catch (error) {
+        // If we have Korean texts, translate them as one batch
+        if (koreanTexts.length > 0) {
+            console.log(`Translating ${koreanTexts.length} texts as one batch...`);
+            
+            // Join all Korean texts with line breaks
+            const combinedKoreanText = koreanTexts.join('\n\n');
+            
+            try {
+                const translatedText = await translateText(combinedKoreanText);
+                console.log("Combined translation result:", translatedText);
+                
+                // Send the combined translation to results window
+                console.log("[K-Novel] Sending translation to background script...");
+                chrome.runtime.sendMessage({
+                    action: "displayTranslation",
+                    originalText: "", // Don't show Korean text
+                    translatedText: translatedText
+                }, (response) => {
+                    console.log("[K-Novel] Background script response:", response);
+                });
+                
+            } catch (translationError) {
+                console.error("[K-Novel] Translation failed:", translationError);
+                alert(`Translation failed: ${translationError.message}`);
+            }
+        } else {
+            console.log("[K-Novel] No text extracted from any images");
+        }
+
+    } catch (error) {
         console.error("[K-Novel] OCR error:", error);
     }
-    
 }
 
 function toggleSelectionMode() {

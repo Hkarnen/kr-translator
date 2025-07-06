@@ -2,6 +2,7 @@ document.addEventListener("DOMContentLoaded", function() {
 	const toggleButton = document.getElementById("toggleSelection");
 	const translateButton = document.getElementById("translateSelected")
 	const clearButton = document.getElementById("clearSelection");
+	const openResultsButton = document.getElementById("openResults");
 	const selectedCount = document.getElementById("selectedCount");
 	const apiKeyInput = document.getElementById("apiKeyInput");
 	const saveApiKeyButton = document.getElementById("saveApiKey");
@@ -158,6 +159,11 @@ document.addEventListener("DOMContentLoaded", function() {
 				}
 			}
 		});
+	});
+
+	openResultsButton.addEventListener("click", () => {
+		chrome.runtime.sendMessage({ action: "openTranslationWindow" });
+		console.log("[K-Novel] Open results button clicked, opening translation window");
 	});
 
 	async function updateSelectedCount() {

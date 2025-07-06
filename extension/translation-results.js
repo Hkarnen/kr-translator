@@ -94,8 +94,10 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Listen for translation data from content script
     chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+        console.log("[K-Novel] Translation results received message:", message);
         if (message.action === 'addTranslation') {
             addTranslationResult(message.originalText, message.translatedText);
+            sendResponse({success: true});
         }
     });
 
@@ -127,18 +129,24 @@ document.addEventListener('DOMContentLoaded', function() {
     function renderTranslationItem(originalText, translatedText, itemNumber) {
         const translationItem = document.createElement('div');
         translationItem.className = 'translation-item';
+        
+        // Only show Korean text section if we have original text
+        const koreanSection = originalText && originalText.trim() ? `
+            <div class="original-text">
+                <h4>Original Korean Text:</h4>
+                <div class="korean-text">${escapeHtml(originalText)}</div>
+            </div>
+        ` : '';
+        
         translationItem.innerHTML = `
             <div class="translation-header">
                 Translation #${itemNumber}
                 <span class="timestamp">${formatTimestamp(new Date())}</span>
             </div>
-            <div class="original-text">
-                <h4>Original Korean Text:</h4>
-                <div class="korean-text">${escapeHtml(originalText)}</div>
-            </div>
+            ${koreanSection}
             <div class="translated-text">
                 <h4>English Translation:</h4>
-                <div class="english-text">${escapeHtml(translatedText)}</div>
+                <div class="english-text">${formatTranslationText(translatedText)}</div>
             </div>
         `;
 
@@ -156,9 +164,22 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
+    function formatTranslationText(text) {
+        // Let OpenAI handle formatting - just convert line breaks to HTML
+        let formattedText = text.replace(/\n\n/g, '</p><p>').replace(/\n/g, '<br>');
+        
+        // Wrap in paragraph tags if we have paragraph breaks
+        if (formattedText.includes('</p><p>')) {
+            formattedText = '<p>' + formattedText + '</p>';
+        }
+        
+        return formattedText;
+    }
+
     function escapeHtml(text) {
         const div = document.createElement('div');
         div.textContent = text;
-        return div.innerHTML;
+        // Replace line breaks with <br> tags to preserve formatting
+        return div.innerHTML.replace(/\n/g, '<br>');
     }
 });
