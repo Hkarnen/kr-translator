@@ -42,6 +42,7 @@ document.addEventListener("DOMContentLoaded", function() {
 		chrome.tabs.sendMessage(tab.id, { action: "getSelectedImages" }, (response) => {
 			if (response && response.images !== undefined) {
 				const imageCount = response.images;
+				console.log("[K-Novel] Selected images count:", imageCount);
 				
 				if (imageCount === 0) {
 					alert("No images selected to extract text from.");

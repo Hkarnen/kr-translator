@@ -59,10 +59,9 @@ async function extractTextFromSelectedImages() {
             console.log(`Extracted text from image ${i+1}:`, text);
 
             if (text && text.trim() !== '') {
-                allKoreanTexts.push(`=== Image ${i+1} ===\n${text.trim()}`);
+                allKoreanTexts.push(text.trim());
             } else {
                 console.log(`No text found in image ${i+1}`);
-                allKoreanTexts.push(`=== Image ${i+1} ===\n[No text detected]`);
             }
         }
 
@@ -70,113 +69,55 @@ async function extractTextFromSelectedImages() {
         await worker.terminate();
         tesseractWorker = null;
 
-        // Combine all extracted text
+        // Combine all extracted text with double line breaks for better readability
         const combinedText = allKoreanTexts.join('\n\n');
         
         // Display the extracted text in a new window or copy to clipboard
         displayExtractedText(combinedText);
 
-    } catch (error) {
+    } 
+    catch (error) {
         console.error("[K-Novel] OCR error:", error);
         alert(`OCR extraction failed: ${error.message}`);
     }
 }
 
 function displayExtractedText(text) {
-    // Create a new window to display the extracted Korean text
-    const newWindow = window.open('', '_blank', 'width=800,height=600,scrollbars=yes,resizable=yes');
+    // Create a new window to display the extracted text
+    const newWindow = window.open('', '_blank', 'width=600,height=400,scrollbars=yes,resizable=yes');
     
     if (newWindow) {
-        newWindow.document.write(`
-            <!DOCTYPE html>
-            <html>
-            <head>
-                <title>Extracted Korean Text</title>
-                <style>
-                    body {
-                        font-family: 'Segoe UI', Arial, sans-serif;
-                        line-height: 1.6;
-                        max-width: 800px;
-                        margin: 0 auto;
-                        padding: 20px;
-                        background: #f5f5f5;
-                    }
-                    .container {
-                        background: white;
-                        padding: 30px;
-                        border-radius: 10px;
-                        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-                    }
-                    h1 {
-                        color: #333;
-                        text-align: center;
-                        border-bottom: 2px solid #007bff;
-                        padding-bottom: 10px;
-                    }
-                    .text-content {
-                        background: #f8f9fa;
-                        padding: 20px;
-                        border-radius: 5px;
-                        border-left: 4px solid #007bff;
-                        white-space: pre-wrap;
-                        font-size: 16px;
-                        line-height: 1.8;
-                    }
-                    .copy-button {
-                        background: #28a745;
-                        color: white;
-                        border: none;
-                        padding: 10px 20px;
-                        border-radius: 5px;
-                        cursor: pointer;
-                        font-size: 16px;
-                        margin-top: 20px;
-                        display: block;
-                        margin-left: auto;
-                        margin-right: auto;
-                    }
-                    .copy-button:hover {
-                        background: #218838;
-                    }
-                </style>
-            </head>
-            <body>
-                <div class="container">
-                    <h1>🔍 Extracted Korean Text</h1>
-                    <div class="text-content" id="extractedText">${text.replace(/\n/g, '<br>')}</div>
-                    <button class="copy-button" onclick="copyToClipboard()">📋 Copy All Text</button>
-                </div>
-                
-                <script>
-                    function copyToClipboard() {
-                        const text = \`${text}\`;
-                        navigator.clipboard.writeText(text).then(() => {
-                            alert('Text copied to clipboard!');
-                        }).catch(err => {
-                            console.error('Failed to copy text: ', err);
-                            // Fallback for older browsers
-                            const textArea = document.createElement('textarea');
-                            textArea.value = text;
-                            document.body.appendChild(textArea);
-                            textArea.select();
-                            document.execCommand('copy');
-                            document.body.removeChild(textArea);
-                            alert('Text copied to clipboard!');
-                        });
-                    }
-                </script>
-            </body>
-            </html>
-        `);
-        newWindow.document.close();
-    } else {
-        // Fallback: copy to clipboard and show alert
-        navigator.clipboard.writeText(text).then(() => {
-            alert('Extracted text copied to clipboard!\\n\\nWindow popup was blocked, but text is in your clipboard.');
-        }).catch(err => {
-            console.error('Failed to copy text: ', err);
-            alert('Extracted text:\\n\\n' + text);
+        // Set up the document
+        newWindow.document.title = 'Extracted Text';
+        
+        // Add basic styling
+        const style = newWindow.document.createElement('style');
+        style.textContent = `
+            body { font-family: Arial, sans-serif; padding: 20px; }
+            pre { white-space: pre-wrap; font-size: 14px; line-height: 1.4; }
+            button { padding: 8px 16px; margin-top: 10px; }
+        `;
+        newWindow.document.head.appendChild(style);
+        
+        // Add the text
+        const pre = newWindow.document.createElement('pre');
+        pre.textContent = text;
+        newWindow.document.body.appendChild(pre);
+        
+        // Add copy button
+        const button = newWindow.document.createElement('button');
+        button.textContent = 'Copy';
+        button.addEventListener('click', () => {
+            newWindow.navigator.clipboard.writeText(text).then(() => {
+                newWindow.alert('Text copied to clipboard!');
+            }).catch(err => {
+                console.error('Failed to copy text: ', err);
+                newWindow.alert('Copy failed. Please select and copy manually.');
+            });
         });
+        newWindow.document.body.appendChild(button);
+    } else {
+        alert("Failed to open new window for displaying extracted text. Please check your popup blocker settings.");
     }
 }
 
