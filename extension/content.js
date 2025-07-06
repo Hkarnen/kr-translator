@@ -124,7 +124,12 @@ async function translateSelectedImages() {
                 // Log the translated text - ENGLISH
                 console.log(`Translation for image ${i+1}:`, translatedText);
                 
-                // TODO: Display or store the translated text as needed
+                // Send translation to results window
+                chrome.runtime.sendMessage({
+                    action: "displayTranslation",
+                    originalText: text,
+                    translatedText: translatedText
+                });
                 
             } 
             catch (translationError) {

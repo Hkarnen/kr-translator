@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>K-Novel Translation Results</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: #f5f5f5;
+            line-height: 1.6;
+        }
+        
+        .header {
+            background: #007bff;
+            color: white;
+            padding: 15px 20px;
+            margin: -20px -20px 20px -20px;
+            border-radius: 0 0 8px 8px;
+        }
+        
+        .header h1 {
+            margin: 0;
+            font-size: 24px;
+        }
+        
+        .controls {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .font-controls {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        
+        .font-controls label {
+            font-weight: bold;
+            margin-right: 8px;
+        }
+        
+        .font-controls select, .font-controls input {
+            padding: 5px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        
+        .translation-item {
+            background: white;
+            margin-bottom: 20px;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .translation-header {
+            background: #28a745;
+            color: white;
+            padding: 10px 15px;
+            font-weight: bold;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .timestamp {
+            font-size: 12px;
+            opacity: 0.8;
+            font-weight: normal;
+        }
+        
+        .original-text {
+            padding: 15px;
+            background: #f8f9fa;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .original-text h4 {
+            margin: 0 0 10px 0;
+            color: #666;
+            font-size: 14px;
+        }
+        
+        .korean-text {
+            font-size: 16px;
+            color: #333;
+            background: #fff;
+            padding: 10px;
+            border-radius: 4px;
+            border-left: 4px solid #fd7e14;
+        }
+        
+        .translated-text {
+            padding: 15px;
+        }
+        
+        .translated-text h4 {
+            margin: 0 0 10px 0;
+            color: #666;
+            font-size: 14px;
+        }
+        
+        .english-text {
+            font-size: 18px;
+            color: #333;
+            line-height: 1.8;
+            font-family: var(--translation-font-family, 'Segoe UI');
+            font-size: var(--translation-font-size, 18px);
+        }
+        
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #666;
+        }
+        
+        .empty-state h2 {
+            color: #999;
+            margin-bottom: 10px;
+        }
+        
+        .clear-button {
+            background: #dc3545;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        
+        .clear-button:hover {
+            background: #c82333;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🔍 K-Novel Translation Results</h1>
+    </div>
+    
+    <div class="controls">
+        <div class="font-controls">
+            <label for="fontFamily">Font:</label>
+            <select id="fontFamily">
+                <option value="Segoe UI">Segoe UI</option>
+                <option value="Arial">Arial</option>
+                <option value="Times New Roman">Times New Roman</option>
+                <option value="Georgia">Georgia</option>
+                <option value="Verdana">Verdana</option>
+                <option value="Trebuchet MS">Trebuchet MS</option>
+            </select>
+            
+            <label for="fontSize">Size:</label>
+            <input type="range" id="fontSize" min="12" max="32" value="18">
+            <span id="fontSizeValue">18px</span>
+            
+            <button class="clear-button" id="clearResults">Clear All</button>
+        </div>
+    </div>
+    
+    <div id="translationContainer">
+        <div class="empty-state">
+            <h2>No translations yet</h2>
+            <p>Translations from your selected images will appear here.</p>
+        </div>
+    </div>
+
+    <script src="translation-results.js"></script>
+</body>
+</html>
