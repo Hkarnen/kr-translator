@@ -48,7 +48,10 @@ extension/
 3. Click "Toggle Selection Mode"
 4. Click on images you want
 5. Click "Translate Selected Images" to extract text
-6. Check browser console for extracted Korean text
+6. Check pop up page for extracted Korean text
+
+### Branch
+1. This version only prints out the Korean text, without translating with OpenAI
 
 ## Installation
 1. Clone this repository
@@ -59,7 +62,7 @@ extension/
 - [X] OpenAI GPT-4 mini integration for translation
 - [X] Display translation results
 ### UX
-- [ ] Translation results displayed in new overlay / tab
+- [X] Translation results displayed in new overlay / tab
 - [ ] Font & font-size support
 
 ### Other Features
