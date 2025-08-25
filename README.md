@@ -11,11 +11,13 @@ Many Korean novel websites display their text content as images rather than sele
   - Selected images are highlighted in blue
   - Multiple images can be selected at once
 - OCR: Extract Korean text from selected images using Tesseract.js
+- Translation: Takes extracted text and translates to English using OpenAI
 > Because of Manifest V3 blocking CDN Tesseract.js has to be downloaded too
 
 ## Tech Stack
 - Manifest V3 Chrome Extension
 - Tesseract.js for OCR (currently only Korean language support)
+- OpenAI 
 - Vanilla JS
 
 ## File Structure
